@@ -2,16 +2,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+/**
+ * Represents a roll in Boggle.
+ * 
+ * @author jesseanderson
+ * 
+ */
 public class BoggleRoll {
+	/** Each dice in Boggle only certain characters. Each character represents a side of the dice */
 	public static final String[] letters = { "aaeegn", "elrtty", "aoottw", "abbjoo", "ehrtvw", "cimotv", "distty",
 			"eiosst", "delrvy", "achops", "humnqu", "eeinsu", "eeghnw", "affkps", "hlnnrz", "deilrx" };
+	
+	/** The size of the square for the Boggle roll */
+	private static final int rollSize = 4;
 
+	/** The characters that were chosen in the Boggle roll */
 	public String[][] rollCharacters;
 
+	/**
+	 * Private constructor. Use static initializers.
+	 */
 	private BoggleRoll() {
-		rollCharacters = new String[letters.length / 4][letters.length / 4];
+		rollCharacters = new String[letters.length / rollSize][letters.length / rollSize];
 	}
 
+	/**
+	 * Creates a random roll of Boggle based on the possible letters
+	 * 
+	 * @return A Boggle roll
+	 */
 	public static BoggleRoll createRoll() {
 		// Shuffle the dice around
 		ArrayList<Integer> diceList = new ArrayList<Integer>();
@@ -34,25 +53,38 @@ public class BoggleRoll {
 
 			String letter = letters[diceList.get(i)].substring(index, index + 1);
 
-			roll.rollCharacters[i / 4][i % 4] = letter;
+			// Set the chosen letter in the characters array
+			roll.rollCharacters[i / rollSize][i % rollSize] = letter;
 		}
 
 		return roll;
 	}
 
+	/**
+	 * Serializes the Boggle Roll to a string
+	 * @return A string representation of the roll
+	 */
 	public String serialize() {
 		return toString();
 	}
 
+	/**
+	 * Deserializes the Boggle Roll from a string
+	 * @param rollString The string representation of the roll
+	 * @return The roll object based on the string
+	 */
 	public static BoggleRoll deserialize(String rollString) {
+		// Split the roll in to lines for the rows
 		String[] lines = rollString.split("\n");
 
 		BoggleRoll roll = new BoggleRoll();
 
 		for (int i = 0; i < lines.length; i++) {
+			// Split the row in to columns
 			String[] letters = lines[i].split(",");
 
 			for (int j = 0; j < letters.length; j++) {
+				// Set the character for the roll
 				roll.rollCharacters[i][j] = letters[j];
 			}
 		}

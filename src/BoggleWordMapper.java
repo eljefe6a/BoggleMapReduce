@@ -15,14 +15,17 @@ import org.apache.log4j.Logger;
 public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraphWritable> {
 	private static final Logger logger = Logger.getLogger(BoggleWordMapper.class);
 
+	/** All words from the dictionary */
 	private HashSet<String> words = new HashSet<String>();
 
+	/** The minimum size for a word to be output */
 	private int minimumWordSize = 0;
 	
 	@Override
 	public void setup(Context context) throws IOException {
 		Configuration configuration = context.getConfiguration();
 
+		// Open the dictionary file
 		FileSystem fileSystem = FileSystem.get(configuration);
 		FSDataInputStream dict = fileSystem.open(new Path(configuration.get(BoggleDriver.DICTIONARY_PARAM)));
 
@@ -36,6 +39,7 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 			Matcher matcher = wordsPattern.matcher(line);
 
 			if (matcher.matches()) {
+				// Add the word to the HashSet for quick checks
 				words.add(line);
 			} else {
 				if (logger.isDebugEnabled()) {
@@ -46,6 +50,7 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 
 		dict.close();
 		
+		// Get the minimum word size from the configuration
 		minimumWordSize = configuration.getInt(BoggleDriver.MINIMUM_WORD_SIZE_PARAM, BoggleDriver.MINIMUM_WORD_SIZE_DEFAULT);
 	}
 
@@ -60,9 +65,11 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 		if (values.length == 3) {
 			String charsSoFar = values[0];
 
+			// See if the word is big enough to emit
 			if (charsSoFar.length() >= minimumWordSize) {
 				// See if the word actually appears in the dictionary
 				if (words.contains(charsSoFar)) {
+					// Word appears, emit
 					RollGraphWritable rollGraph = RollGraphWritable.deserialize(values[1] + " " + values[2]);
 	
 					context.write(new Text(charsSoFar), rollGraph);
