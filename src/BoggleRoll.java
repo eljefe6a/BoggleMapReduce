@@ -9,13 +9,16 @@ import java.util.Random;
  * 
  */
 public class BoggleRoll {
-	// Each dice in Boggle only certain characters. Each character represents a side of the dice
+	/** Constant for new version of Boggle */
 	public static final int newVersion = 0;
 
+	/** Constant for old version of Boggle */
 	public static final int oldVersion = 1;
 
+	/** Constant for Big Boggle version */
 	public static final int bigBoggleVersion = 2;
 
+	// Each dice in Boggle only certain characters. Each character represents a side of the dice
 	/** Dice for the new version of Boggle */
 	public static final String[] newVersionDice = { "aaeegn", "elrtty", "aoottw", "abbjoo", "ehrtvw", "cimotv",
 			"distty", "eiosst", "delrvy", "achops", "humnqu", "eeinsu", "eeghnw", "affkps", "hlnnrz", "deilrx" };
@@ -72,7 +75,19 @@ public class BoggleRoll {
 	}
 
 	private void createRandomVersion(int size) {
-
+		versionDice = new String[size*size];
+		
+		Random random = new Random();
+		
+		// Big Note!
+		// Only the BoggleRoll created by the driver will have the correct version
+		// of the dice.  You could serialize the object out and read it in, but
+		// isn't necessary for this program.  We only need to make sure that
+		// the dice sides are serialized correctly (they are).
+		
+		for (int i = 0; i < versionDice.length; i++) {
+			versionDice[i] = bigBoggleVersionDice[random.nextInt(bigBoggleVersionDice.length)];
+		}
 	}
 
 	/**

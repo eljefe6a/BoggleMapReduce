@@ -34,6 +34,9 @@ public class BoggleDriver extends Configured implements Tool {
 	/** The parameter name for the roll to be serialized */
 	public static final String ROLL_PARAM = "roll";
 
+	/** The parameter name for the roll version */
+	public static final String ROLL_VERSION = "rollversion";
+	
 	@Override
 	public int run(String[] args) throws Exception {
 		if (args.length != 4) {
@@ -50,7 +53,7 @@ public class BoggleDriver extends Configured implements Tool {
 		// To change how the mappers are created to process the roll,
 		// pass in -D mapreduce.input.lineinputformat.linespermap=0
 		// or in code uncomment:
-		configuration.set("mapreduce.input.lineinputformat.linespermap", "32");
+		configuration.set("mapreduce.input.lineinputformat.linespermap", "64");
 
 		FileSystem fileSystem = FileSystem.get(configuration);
 
@@ -69,7 +72,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(BoggleRoll.bigBoggleVersion);
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.bigBoggleVersion));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
@@ -102,6 +105,7 @@ public class BoggleDriver extends Configured implements Tool {
 		writeRollFile(input, fileSystem, roll, iteration);
 
 		long previousWordCount = 0;
+		long bloomSavings = 0;
 
 		// Traverse the graph until it is completely traversed
 		do {
@@ -134,10 +138,11 @@ public class BoggleDriver extends Configured implements Tool {
 
 			// Check to see if the entire graph has been traversed
 			long currentWordCount = job.getCounters().findCounter("boggle", "words").getValue();
+			bloomSavings += job.getCounters().findCounter("boggle", "bloom").getValue();
 
 			if (currentWordCount == previousWordCount) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount
-						+ " potential words.");
+						+ " potential words.  Bloom saved " + bloomSavings + " so far.");
 				break;
 			}
 

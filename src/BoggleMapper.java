@@ -108,7 +108,12 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 
 						context.write(new Text(newWord), nextGraphWritable);
 					} else {
-						logger.info("Throwing out " + newWord + " because it didn't pass membership test");
+						// Use counters to keep track of how many words were thrown out by the Bloom Filter
+						context.getCounter("boggle", "bloom").increment(1);
+						
+						if (logger.isDebugEnabled()) {
+							logger.debug("Throwing out " + newWord + " because it didn't pass membership test");
+						}
 					}
 				}
 			}
