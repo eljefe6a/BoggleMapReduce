@@ -76,17 +76,17 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 		rollGraph.isFinal = true;
 		context.write(new Text(charsSoFar), rollGraph);
 
-		// Emit the letters around the last node in the Boggle Roll
+		// Emit the newVersionDice around the last node in the Boggle Roll
 		Node node = rollGraph.nodes.get(rollGraph.nodes.size() - 1);
 
 		for (int row = node.row - 1; row < node.row + 1; row++) {
-			if (row < 0 || row >= BoggleRoll.letters.length) {
+			if (row < 0 || row >= roll.rollSize) {
 				// Check if row is outside the bounds and skip if so
 				continue;
 			}
 
 			for (int col = node.column - 1; col < node.column + 1; col++) {
-				if (col < 0 || col >= BoggleRoll.letters.length) {
+				if (col < 0 || col >= roll.rollSize) {
 					// Check if column is outside the bounds and skip if so
 					continue;
 				}

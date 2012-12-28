@@ -73,6 +73,8 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 					RollGraphWritable rollGraph = RollGraphWritable.deserialize(values[1] + " " + values[2]);
 	
 					context.write(new Text(charsSoFar), rollGraph);
+					
+					context.getCounter("boggle", "finalwords").increment(1);
 				}
 			}
 		} else {

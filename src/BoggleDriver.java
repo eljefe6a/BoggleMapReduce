@@ -50,7 +50,7 @@ public class BoggleDriver extends Configured implements Tool {
 		// To change how the mappers are created to process the roll,
 		// pass in -D mapreduce.input.lineinputformat.linespermap=0
 		// or in code uncomment:
-		// configuration.set("mapreduce.input.lineinputformat.linespermap", "8");
+		configuration.set("mapreduce.input.lineinputformat.linespermap", "32");
 
 		FileSystem fileSystem = FileSystem.get(configuration);
 
@@ -69,12 +69,12 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll();
+		BoggleRoll roll = BoggleRoll.createRoll(BoggleRoll.bigBoggleVersion);
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
 
-		boolean success = findWords(input, output, configuration, iteration);
+		boolean success = findWords(input, output, configuration, iteration, roll);
 
 		return success ? 0 : 1;
 	}
@@ -160,12 +160,14 @@ public class BoggleDriver extends Configured implements Tool {
 	 *            The configuration object
 	 * @param iteration
 	 *            The number of iterations it took to traverse the graph
+	 * @param roll
+	 *            The Boggle roll
 	 * @return If the job was successful
 	 * @throws IOException
 	 * @throws InterruptedException
 	 * @throws ClassNotFoundException
 	 */
-	private boolean findWords(String input, String output, Configuration configuration, int iteration)
+	private boolean findWords(String input, String output, Configuration configuration, int iteration, BoggleRoll roll)
 			throws IOException, InterruptedException, ClassNotFoundException {
 		Job job = new Job(configuration);
 		job.setJarByClass(BoggleDriver.class);
@@ -182,6 +184,12 @@ public class BoggleDriver extends Configured implements Tool {
 		job.setOutputValueClass(RollGraphWritable.class);
 
 		boolean success = job.waitForCompletion(true);
+
+		long finalWordCount = job.getCounters().findCounter("boggle", "finalwords").getValue();
+
+		logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + finalWordCount
+				+ " total words.  With roll:\n" + roll.toString());
+
 		return success;
 	}
 
@@ -205,9 +213,9 @@ public class BoggleDriver extends Configured implements Tool {
 			for (int j = 0; j < roll.rollCharacters[i].length; j++) {
 				ArrayList<Node> nodes = new ArrayList<Node>();
 				nodes.add(new Node(i, j));
-				
+
 				RollGraphWritable graphWritable = new RollGraphWritable(nodes, false);
-				
+
 				// Mimic the adjacency matrix written by the mapper to start things off
 				String output = roll.rollCharacters[i][j] + " " + graphWritable.serialize() + "\n";
 				outputStream.writeBytes(output);
