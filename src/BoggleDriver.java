@@ -18,7 +18,20 @@ import org.apache.log4j.Logger;
 public class BoggleDriver extends Configured implements Tool {
 	private static final Logger logger = Logger.getLogger(BoggleDriver.class);
 	
-	public static final int MINIMUM_WORD_SIZE = 3;
+	/** The parameter name for the minimum word size to output */
+	public static final String MINIMUM_WORD_SIZE_PARAM = "minimumwordsize";
+	
+	/** The default value for the minimum word size to output */
+	public static final int MINIMUM_WORD_SIZE_DEFAULT = 3;
+	
+	/** The parameter name for the bloom filter location */
+	public static final String BLOOM_PARAM = "bloompath";
+	
+	/** The parameter name for the dictionary location */
+	public static final String DICTIONARY_PARAM = "dictionarypath";
+	
+	/** The parameter name for the roll to be serialized */
+	public static final String ROLL_PARAM = "roll";
 	
 	@Override
 	public int run(String[] args) throws Exception {
@@ -33,7 +46,10 @@ public class BoggleDriver extends Configured implements Tool {
 		String output = args[3];
 
 		Configuration configuration = getConf();
-		configuration.set("mapreduce.input.lineinputformat.linespermap", "8");
+		// To change how the mappers are created to process the roll,
+		// pass in -D mapreduce.input.lineinputformat.linespermap=0
+		// or in code uncomment:
+		//configuration.set("mapreduce.input.lineinputformat.linespermap", "8");
 
 		FileSystem fileSystem = FileSystem.get(configuration);
 
@@ -49,15 +65,14 @@ public class BoggleDriver extends Configured implements Tool {
 			return -1;
 		}
 
-		configuration.set("bloompath", bloomPath);
-		configuration.set("dictionarypath", dictionary);
+		configuration.set(BLOOM_PARAM, bloomPath);
+		configuration.set(DICTIONARY_PARAM, dictionary);
 
 		BoggleRoll roll = BoggleRoll.createRoll();
-		configuration.set("roll", roll.serialize());
+		configuration.set(ROLL_PARAM, roll.serialize());
 
 		writeRollFile(input, fileSystem, roll);
 
-		boolean isDone = false;
 		int iteration = 0;
 
 		long previousWordCount = 0;
@@ -101,7 +116,7 @@ public class BoggleDriver extends Configured implements Tool {
 			previousWordCount = currentWordCount;
 
 			iteration++;
-		} while (!isDone);
+		} while (true);
 
 		// Check for words and output to final directory
 		Job job = new Job(configuration);

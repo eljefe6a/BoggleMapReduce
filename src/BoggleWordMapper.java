@@ -15,18 +15,16 @@ import org.apache.log4j.Logger;
 public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraphWritable> {
 	private static final Logger logger = Logger.getLogger(BoggleWordMapper.class);
 
-	private BoggleRoll roll;
-
 	private HashSet<String> words = new HashSet<String>();
 
+	private int minimumWordSize = 0;
+	
 	@Override
 	public void setup(Context context) throws IOException {
 		Configuration configuration = context.getConfiguration();
 
-		roll = BoggleRoll.deserialize(configuration.get("roll"));
-
 		FileSystem fileSystem = FileSystem.get(configuration);
-		FSDataInputStream dict = fileSystem.open(new Path(configuration.get("dictionarypath")));
+		FSDataInputStream dict = fileSystem.open(new Path(configuration.get(BoggleDriver.DICTIONARY_PARAM)));
 
 		String line;
 
@@ -47,6 +45,8 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 		}
 
 		dict.close();
+		
+		minimumWordSize = configuration.getInt(BoggleDriver.MINIMUM_WORD_SIZE_PARAM, BoggleDriver.MINIMUM_WORD_SIZE_DEFAULT);
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 		if (values.length == 3) {
 			String charsSoFar = values[0];
 
-			if (charsSoFar.length() >= BoggleDriver.MINIMUM_WORD_SIZE) {
+			if (charsSoFar.length() >= minimumWordSize) {
 				// See if the word actually appears in the dictionary
 				if (words.contains(charsSoFar)) {
 					RollGraphWritable rollGraph = RollGraphWritable.deserialize(values[1] + " " + values[2]);

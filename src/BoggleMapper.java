@@ -22,12 +22,12 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 	public void setup(Context context) throws IOException {
 		Configuration configuration = context.getConfiguration();
 		
-		roll = BoggleRoll.deserialize(configuration.get("roll"));
+		roll = BoggleRoll.deserialize(configuration.get(BoggleDriver.ROLL_PARAM));
 		
 		FileSystem fileSystem = FileSystem.get(configuration);
 		
 		bloomFilter = new BloomFilter(UserDictBloom.vectorSize, UserDictBloom.nbHash, UserDictBloom.hashType);		
-		bloomFilter.readFields(fileSystem.open(new Path(configuration.get("bloompath"))));
+		bloomFilter.readFields(fileSystem.open(new Path(configuration.get(BoggleDriver.BLOOM_PARAM))));
 	}
 
 	@Override
