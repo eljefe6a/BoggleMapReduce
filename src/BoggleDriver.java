@@ -129,7 +129,6 @@ public class BoggleDriver extends Configured implements Tool {
 			job.setNumReduceTasks(0);
 
 			job.setMapperClass(BoggleMapper.class);
-			job.setReducerClass(BoggleReducer.class);
 
 			job.setMapOutputKeyClass(Text.class);
 			job.setMapOutputValueClass(RollGraphWritable.class);
