@@ -30,7 +30,7 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 		// Load the Bloom Filter
 		FileSystem fileSystem = FileSystem.get(configuration);
 
-		bloomFilter = new BloomFilter(UserDictBloom.vectorSize, UserDictBloom.nbHash, UserDictBloom.hashType);
+		bloomFilter = new BloomFilter(UserDictBloom.VECTOR_SIZE, UserDictBloom.NBHASH, UserDictBloom.HASH_TYPE);
 		bloomFilter.readFields(fileSystem.open(new Path(configuration.get(BoggleDriver.BLOOM_PARAM))));
 	}
 

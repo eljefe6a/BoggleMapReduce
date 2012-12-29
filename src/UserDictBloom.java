@@ -14,11 +14,11 @@ import org.apache.hadoop.util.hash.Hash;
 
 public class UserDictBloom {
 	/** The vector size for the Bloom Filter */
-	public static final int vectorSize = 1048576;
+	public static final int VECTOR_SIZE = 1048576;
 	/** The number of hashes for the Bloom Filter */
-	public static final int nbHash = 3;
+	public static final int NBHASH = 3;
 	/** The type of hashing to use for the Bloom Filter */
-	public static final int hashType = Hash.MURMUR_HASH;
+	public static final int HASH_TYPE = Hash.MURMUR_HASH;
 
 	public static void main(String args[]) {
 		try {
@@ -44,7 +44,7 @@ public class UserDictBloom {
 
 			Pattern words = Pattern.compile("[a-z]*");
 
-			BloomFilter bloomFilter = new BloomFilter(vectorSize, nbHash, hashType);
+			BloomFilter bloomFilter = new BloomFilter(VECTOR_SIZE, NBHASH, HASH_TYPE);
 
 			while ((line = dict.readLine()) != null) {
 				// Normalize all words to lower case and remove all dashes

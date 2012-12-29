@@ -79,7 +79,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.bigBoggleVersion));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.NEW_VERSION));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);

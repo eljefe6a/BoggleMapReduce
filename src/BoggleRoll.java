@@ -10,30 +10,30 @@ import java.util.Random;
  */
 public class BoggleRoll {
 	/** Constant for new version of Boggle */
-	public static final int newVersion = 0;
+	public static final int NEW_VERSION = 0;
 
 	/** Constant for old version of Boggle */
-	public static final int oldVersion = 1;
+	public static final int OLD_VERSION = 1;
 
 	/** Constant for Big Boggle version */
-	public static final int bigBoggleVersion = 2;
+	public static final int BIG_BOGGLE_VERSION = 2;
 
 	// Each dice in Boggle only certain characters. Each character represents a side of the dice
 	/** Dice for the new version of Boggle */
-	public static final String[] newVersionDice = { "aaeegn", "elrtty", "aoottw", "abbjoo", "ehrtvw", "cimotv",
+	public static final String[] NEW_VERSION_DICE = { "aaeegn", "elrtty", "aoottw", "abbjoo", "ehrtvw", "cimotv",
 			"distty", "eiosst", "delrvy", "achops", "humnqu", "eeinsu", "eeghnw", "affkps", "hlnnrz", "deilrx" };
 
 	/** Dice for the old version of Boggle */
-	public static final String[] oldVersionDice = { "aaciot", "ahmors", "egkluy", "abilty", "acdemp", "egintv",
+	public static final String[] OLD_VERSION_DICE = { "aaciot", "ahmors", "egkluy", "abilty", "acdemp", "egintv",
 			"gilruw", "elpstu", "denosw", "acelrs", "abjmoq", "eefhiy", "ehinps", "dknotu", "adenvz", "biforx" };
 
 	/** Dice for the Big Boggle version */
-	public static final String[] bigBoggleVersionDice = { "aaafrs", "aaeeee", "aafirs", "adennn", "aeeeem", "aeegmu",
+	public static final String[] BIG_BOGGLE_VERSION_DICE = { "aaafrs", "aaeeee", "aafirs", "adennn", "aeeeem", "aeegmu",
 			"aegmnn", "afirsy", "bjkqxz", "ccenst", "ceiilt", "ceilpt", "ceipst", "ddhnot", "dhhlor", "dhlnor",
 			"dhlnor", "eiiitt", "emottt", "ensssu", "fiprsy", "gorrvw", "iprrry", "nootuw", "ooottu" };
 
 	/** The number of sides on a dice */
-	private static final int diceSides = 6;
+	private static final int DICE_SIDES = 6;
 
 	/** The version of the dice to use */
 	public String[] versionDice;
@@ -57,12 +57,12 @@ public class BoggleRoll {
 	private BoggleRoll(int version) {
 		this.version = version;
 		
-		if (version == newVersion) {
-			versionDice = newVersionDice;
-		} else if (version == oldVersion) {
-			versionDice = oldVersionDice;
-		} else if (version == bigBoggleVersion) {
-			versionDice = bigBoggleVersionDice;
+		if (version == NEW_VERSION) {
+			versionDice = NEW_VERSION_DICE;
+		} else if (version == OLD_VERSION) {
+			versionDice = OLD_VERSION_DICE;
+		} else if (version == BIG_BOGGLE_VERSION) {
+			versionDice = BIG_BOGGLE_VERSION_DICE;
 		} else if (version > 5) {
 			createRandomVersion(version);
 		} else {
@@ -86,7 +86,7 @@ public class BoggleRoll {
 		// the dice sides are serialized correctly (they are).
 		
 		for (int i = 0; i < versionDice.length; i++) {
-			versionDice[i] = bigBoggleVersionDice[random.nextInt(bigBoggleVersionDice.length)];
+			versionDice[i] = BIG_BOGGLE_VERSION_DICE[random.nextInt(BIG_BOGGLE_VERSION_DICE.length)];
 		}
 	}
 
@@ -114,7 +114,7 @@ public class BoggleRoll {
 
 		// Choose a side of the dice
 		for (int i = 0; i < diceList.size(); i++) {
-			int index = random.nextInt(diceSides);
+			int index = random.nextInt(DICE_SIDES);
 
 			String letter = roll.versionDice[diceList.get(i)].substring(index, index + 1);
 
