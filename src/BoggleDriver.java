@@ -79,7 +79,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.newVersion));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.bigBoggleVersion));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
@@ -130,9 +130,6 @@ public class BoggleDriver extends Configured implements Tool {
 
 			job.setMapperClass(BoggleMapper.class);
 
-			job.setMapOutputKeyClass(Text.class);
-			job.setMapOutputValueClass(RollGraphWritable.class);
-
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(RollGraphWritable.class);
 
@@ -149,9 +146,9 @@ public class BoggleDriver extends Configured implements Tool {
 			logger.info("Traversed graph for " + iteration + " iterations.  Found " + currentWordCount
 					+ " potential words.  Bloom saved " + bloomSavings + " so far.");
 
-			if (currentWordCount == previousWordCount) {
+			if (currentWordCount == previousWordCount || iteration == (roll.rollSize * roll.rollSize)) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount
-						+ " potential words.  Bloom saved " + bloomSavings + " so far.");
+						+ " potential words.  Bloom saved " + bloomSavings + ".");
 				break;
 			}
 
