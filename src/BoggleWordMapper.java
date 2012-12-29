@@ -7,12 +7,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraphWritable> {
+public class BoggleWordMapper extends Mapper<Text, RollGraphWritable, Text, RollGraphWritable> {
 	private static final Logger logger = Logger.getLogger("Boggle");
 
 	/** All words from the dictionary */
@@ -20,7 +19,7 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 
 	/** The minimum size for a word to be output */
 	private int minimumWordSize = 0;
-	
+
 	@Override
 	public void setup(Context context) throws IOException {
 		Configuration configuration = context.getConfiguration();
@@ -49,37 +48,25 @@ public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraph
 		}
 
 		dict.close();
-		
+
 		// Get the minimum word size from the configuration
-		minimumWordSize = configuration.getInt(BoggleDriver.MINIMUM_WORD_SIZE_PARAM, BoggleDriver.MINIMUM_WORD_SIZE_DEFAULT);
+		minimumWordSize = configuration.getInt(BoggleDriver.MINIMUM_WORD_SIZE_PARAM,
+				BoggleDriver.MINIMUM_WORD_SIZE_DEFAULT);
 	}
 
 	@Override
-	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-		// Expected input:
-		// aaaaa [[0,0][1,1][2,2]] false
-		String line = value.toString();
+	public void map(Text key, RollGraphWritable value, Context context) throws IOException, InterruptedException {
+		String charsSoFar = key.toString();
 
-		String values[] = line.split("\\s");
+		// See if the word is big enough to emit
+		if (charsSoFar.length() >= minimumWordSize) {
+			// See if the word actually appears in the dictionary
+			if (words.contains(charsSoFar)) {
+				// Word appears, emit
+				context.write(new Text(charsSoFar), value);
 
-		if (values.length == 3) {
-			String charsSoFar = values[0];
-
-			// See if the word is big enough to emit
-			if (charsSoFar.length() >= minimumWordSize) {
-				// See if the word actually appears in the dictionary
-				if (words.contains(charsSoFar)) {
-					// Word appears, emit
-					RollGraphWritable rollGraph = RollGraphWritable.deserialize(values[1] + " " + values[2]);
-	
-					context.write(new Text(charsSoFar), rollGraph);
-					
-					context.getCounter("boggle", "finalwords").increment(1);
-				}
+				context.getCounter("boggle", "finalwords").increment(1);
 			}
-		} else {
-			logger.warn("The input line had more spaces than were expected.  Had " + values.length
-					+ " expected 3.  The line was \"" + line + "\"");
 		}
 	}
 }

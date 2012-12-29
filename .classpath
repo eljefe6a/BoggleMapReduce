@@ -62,7 +62,11 @@
 	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/slf4j-log4j12-1.6.1.jar"/>
-	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/snappy-java-1.0.4.1.jar"/>
+	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/snappy-java-1.0.4.1.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/usr/lib/hadoop/lib/native"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/xmlenc-0.52.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/client-0.20/zookeeper-3.4.3-cdh4.1.1.jar"/>
 	<classpathentry kind="lib" path="/usr/lib/hadoop/hadoop-annotations.jar"/>

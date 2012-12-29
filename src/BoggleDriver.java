@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.conf.Configuration;
@@ -57,10 +62,6 @@ public class BoggleDriver extends Configured implements Tool {
 		Logger.getRootLogger().setLevel(Level.ERROR);
 
 		Configuration configuration = getConf();
-		// To change how the mappers are created to process the roll,
-		// pass in -D mapreduce.input.lineinputformat.linespermap=0
-		// or in code uncomment:
-		configuration.set("mapreduce.input.lineinputformat.linespermap", "10240");
 
 		FileSystem fileSystem = FileSystem.get(configuration);
 
@@ -79,7 +80,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.NEW_VERSION));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.BIG_BOGGLE_VERSION));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
@@ -109,7 +110,7 @@ public class BoggleDriver extends Configured implements Tool {
 			throws IOException, InterruptedException, ClassNotFoundException {
 		int iteration = 0;
 
-		writeRollFile(input, fileSystem, roll, iteration);
+		writeRollFile(input, fileSystem, configuration, roll, iteration);
 
 		long previousWordCount = 0;
 		long bloomSavings = 0;
@@ -123,8 +124,12 @@ public class BoggleDriver extends Configured implements Tool {
 			FileInputFormat.setInputPaths(job, getPath(input, iteration));
 			FileOutputFormat.setOutputPath(job, getPath(input, iteration + 1));
 
-			// Roll is broken in to x mappers per node
-			job.setInputFormatClass(NLineInputFormat.class);
+			job.setInputFormatClass(SequenceFileInputFormat.class);
+			job.setOutputFormatClass(SequenceFileOutputFormat.class);
+			
+		    FileOutputFormat.setOutputCompressorClass(job, SnappyCodec.class);
+		    SequenceFileOutputFormat.setOutputCompressionType(job,
+		        CompressionType.BLOCK);
 
 			job.setNumReduceTasks(0);
 
@@ -187,6 +192,8 @@ public class BoggleDriver extends Configured implements Tool {
 		FileInputFormat.setInputPaths(job, getPath(input, iteration));
 		FileOutputFormat.setOutputPath(job, new Path(output));
 
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+
 		job.setNumReduceTasks(1);
 
 		job.setMapperClass(BoggleWordMapper.class);
@@ -217,8 +224,10 @@ public class BoggleDriver extends Configured implements Tool {
 	 *            The iteration for the input
 	 * @throws IOException
 	 */
-	private void writeRollFile(String input, FileSystem fileSystem, BoggleRoll roll, int iteration) throws IOException {
-		FSDataOutputStream outputStream = fileSystem.create(getPath(input, 0));
+	private void writeRollFile(String input, FileSystem fileSystem, Configuration configuration, BoggleRoll roll,
+			int iteration) throws IOException {
+		Path parent = getPath(input, iteration);
+		fileSystem.mkdirs(parent);
 
 		for (int i = 0; i < roll.rollCharacters.length; i++) {
 			for (int j = 0; j < roll.rollCharacters[i].length; j++) {
@@ -227,13 +236,23 @@ public class BoggleDriver extends Configured implements Tool {
 
 				RollGraphWritable graphWritable = new RollGraphWritable(nodes, false);
 
+				Text text = new Text(roll.rollCharacters[i][j]);
+
+				// Note:
+				// By creating a file per starting character, that can cause
+				// one character's file to get very little use if it's a z or x or y.
+				// You could work around this by rebalancing every so often.
+				
 				// Mimic the adjacency matrix written by the mapper to start things off
-				String output = roll.rollCharacters[i][j] + " " + graphWritable.serialize() + "\n";
-				outputStream.writeBytes(output);
+				SequenceFile.Writer writer = null;
+
+				writer = SequenceFile.createWriter(fileSystem, configuration, new Path(parent, i + "-" + j + ".txt"),
+						text.getClass(), graphWritable.getClass());
+				writer.append(text, graphWritable);
+
+				IOUtils.closeStream(writer);
 			}
 		}
-
-		outputStream.close();
 	}
 
 	/**
