@@ -48,8 +48,8 @@ public class RollGraphWritable implements Writable {
 
 		// Write out the nodes
 		for (Node node : nodes) {
-			out.writeInt(node.row);
-			out.writeInt(node.column);
+			out.writeShort(node.row);
+			out.writeShort(node.column);
 		}
 	}
 
@@ -64,8 +64,8 @@ public class RollGraphWritable implements Writable {
 
 		// Read in the nodes
 		for (int i = 0; i < numNodes; i++) {
-			int row = in.readInt();
-			int column = in.readInt();
+			short row = in.readShort();
+			short column = in.readShort();
 
 			nodes.add(new Node(row, column));
 		}
