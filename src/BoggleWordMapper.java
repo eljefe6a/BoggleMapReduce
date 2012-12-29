@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 public class BoggleWordMapper extends Mapper<LongWritable, Text, Text, RollGraphWritable> {
-	private static final Logger logger = Logger.getLogger(BoggleWordMapper.class);
+	private static final Logger logger = Logger.getLogger("Boggle");
 
 	/** All words from the dictionary */
 	private HashSet<String> words = new HashSet<String>();

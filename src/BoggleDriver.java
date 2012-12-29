@@ -14,10 +14,11 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class BoggleDriver extends Configured implements Tool {
-	private static final Logger logger = Logger.getLogger(BoggleDriver.class);
+	private static final Logger logger = Logger.getLogger("Boggle");
 
 	/** The parameter name for the minimum word size to output */
 	public static final String MINIMUM_WORD_SIZE_PARAM = "minimumwordsize";
@@ -36,7 +37,7 @@ public class BoggleDriver extends Configured implements Tool {
 
 	/** The parameter name for the roll version */
 	public static final String ROLL_VERSION = "rollversion";
-	
+
 	@Override
 	public int run(String[] args) throws Exception {
 		if (args.length != 4) {
@@ -49,11 +50,17 @@ public class BoggleDriver extends Configured implements Tool {
 		String input = args[2];
 		String output = args[3];
 
+		// Change Log4J to only output the map and reducer data
+		// This helps view what's happening with the data easier
+		// Comment this out to get all log data
+		Logger.getLogger("Boggle").setLevel(Level.INFO);
+		Logger.getRootLogger().setLevel(Level.ERROR);
+
 		Configuration configuration = getConf();
 		// To change how the mappers are created to process the roll,
 		// pass in -D mapreduce.input.lineinputformat.linespermap=0
 		// or in code uncomment:
-		configuration.set("mapreduce.input.lineinputformat.linespermap", "64");
+		configuration.set("mapreduce.input.lineinputformat.linespermap", "10240");
 
 		FileSystem fileSystem = FileSystem.get(configuration);
 
@@ -72,7 +79,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.bigBoggleVersion));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.newVersion));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
@@ -139,6 +146,9 @@ public class BoggleDriver extends Configured implements Tool {
 			// Check to see if the entire graph has been traversed
 			long currentWordCount = job.getCounters().findCounter("boggle", "words").getValue();
 			bloomSavings += job.getCounters().findCounter("boggle", "bloom").getValue();
+
+			logger.info("Traversed graph for " + iteration + " iterations.  Found " + currentWordCount
+					+ " potential words.  Bloom saved " + bloomSavings + " so far.");
 
 			if (currentWordCount == previousWordCount) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount

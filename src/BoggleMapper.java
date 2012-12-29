@@ -12,7 +12,7 @@ import org.apache.hadoop.util.bloom.Key;
 import org.apache.log4j.Logger;
 
 public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWritable> {
-	private static final Logger logger = Logger.getLogger(BoggleMapper.class);
+	private static final Logger logger = Logger.getLogger("Boggle");
 
 	/** The Boggle Roll that is being process */
 	private BoggleRoll roll;
@@ -76,16 +76,16 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 		rollGraph.isFinal = true;
 		context.write(new Text(charsSoFar), rollGraph);
 
-		// Emit the newVersionDice around the last node in the Boggle Roll
+		// Emit the characters around the last node in the Boggle Roll
 		Node node = rollGraph.nodes.get(rollGraph.nodes.size() - 1);
 
-		for (int row = node.row - 1; row < node.row + 1; row++) {
+		for (int row = node.row - 1; row < node.row + 2; row++) {
 			if (row < 0 || row >= roll.rollSize) {
 				// Check if row is outside the bounds and skip if so
 				continue;
 			}
 
-			for (int col = node.column - 1; col < node.column + 1; col++) {
+			for (int col = node.column - 1; col < node.column + 2; col++) {
 				if (col < 0 || col >= roll.rollSize) {
 					// Check if column is outside the bounds and skip if so
 					continue;
