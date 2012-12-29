@@ -126,7 +126,7 @@ public class BoggleDriver extends Configured implements Tool {
 			// Roll is broken in to x mappers per node
 			job.setInputFormatClass(NLineInputFormat.class);
 
-			job.setNumReduceTasks(1);
+			job.setNumReduceTasks(0);
 
 			job.setMapperClass(BoggleMapper.class);
 			job.setReducerClass(BoggleReducer.class);

@@ -51,6 +51,9 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 				processNonFinalNode(context, charsSoFar, rollGraph);
 			} else {
 				context.write(new Text(charsSoFar), rollGraph);
+				
+				// Use counters to keep track of how many words were found so far
+				context.getCounter("boggle", "words").increment(1);
 			}
 		} else {
 			logger.warn("The input line had more spaces than were expected.  Had " + values.length
@@ -107,6 +110,9 @@ public class BoggleMapper extends Mapper<LongWritable, Text, Text, RollGraphWrit
 						RollGraphWritable nextGraphWritable = new RollGraphWritable(nextNodeList, false);
 
 						context.write(new Text(newWord), nextGraphWritable);
+						
+						// Use counters to keep track of how many words were found so far
+						context.getCounter("boggle", "words").increment(1);
 					} else {
 						// Use counters to keep track of how many words were thrown out by the Bloom Filter
 						context.getCounter("boggle", "bloom").increment(1);
