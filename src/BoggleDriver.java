@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
@@ -42,6 +41,12 @@ public class BoggleDriver extends Configured implements Tool {
 
 	/** The parameter name for the roll version */
 	public static final String ROLL_VERSION = "rollversion";
+
+	/** The parameter name for the minimum word size to output */
+	public static final String MAX_ITERATIONS_PARAM = "maxiterations";
+
+	/** The default value for the minimum word size to output */
+	public static final int MAX_ITERATIONS_DEFAULT = 9;
 
 	@Override
 	public int run(String[] args) throws Exception {
@@ -110,6 +115,8 @@ public class BoggleDriver extends Configured implements Tool {
 			throws IOException, InterruptedException, ClassNotFoundException {
 		int iteration = 0;
 
+		int maxiterations = configuration.getInt(MAX_ITERATIONS_PARAM, MAX_ITERATIONS_DEFAULT);
+
 		writeRollFile(input, fileSystem, configuration, roll, iteration);
 
 		long previousWordCount = 0;
@@ -126,10 +133,9 @@ public class BoggleDriver extends Configured implements Tool {
 
 			job.setInputFormatClass(SequenceFileInputFormat.class);
 			job.setOutputFormatClass(SequenceFileOutputFormat.class);
-			
-		    FileOutputFormat.setOutputCompressorClass(job, SnappyCodec.class);
-		    SequenceFileOutputFormat.setOutputCompressionType(job,
-		        CompressionType.BLOCK);
+
+			FileOutputFormat.setOutputCompressorClass(job, SnappyCodec.class);
+			SequenceFileOutputFormat.setOutputCompressionType(job, CompressionType.BLOCK);
 
 			job.setNumReduceTasks(0);
 
@@ -151,7 +157,8 @@ public class BoggleDriver extends Configured implements Tool {
 			logger.info("Traversed graph for " + iteration + " iterations.  Found " + currentWordCount
 					+ " potential words.  Bloom saved " + bloomSavings + " so far.");
 
-			if (currentWordCount == previousWordCount || iteration == (roll.rollSize * roll.rollSize)) {
+			if (currentWordCount == previousWordCount
+					|| iteration == (roll.rollSize * roll.rollSize) || iteration == maxiterations) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount
 						+ " potential words.  Bloom saved " + bloomSavings + ".");
 				break;
@@ -242,7 +249,7 @@ public class BoggleDriver extends Configured implements Tool {
 				// By creating a file per starting character, that can cause
 				// one character's file to get very little use if it's a z or x or y.
 				// You could work around this by rebalancing every so often.
-				
+
 				// Mimic the adjacency matrix written by the mapper to start things off
 				SequenceFile.Writer writer = null;
 
