@@ -14,9 +14,9 @@ import org.apache.hadoop.util.hash.Hash;
 
 public class UserDictBloom {
 	/** The vector size for the Bloom Filter */
-	public static final int VECTOR_SIZE = 1048576;
+	public static final int VECTOR_SIZE = 10485760;
 	/** The number of hashes for the Bloom Filter */
-	public static final int NBHASH = 3;
+	public static final int NBHASH = 6;
 	/** The type of hashing to use for the Bloom Filter */
 	public static final int HASH_TYPE = Hash.MURMUR_HASH;
 

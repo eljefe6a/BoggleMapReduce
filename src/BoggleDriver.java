@@ -46,7 +46,7 @@ public class BoggleDriver extends Configured implements Tool {
 	public static final String MAX_ITERATIONS_PARAM = "maxiterations";
 
 	/** The default value for the minimum word size to output */
-	public static final int MAX_ITERATIONS_DEFAULT = 9;
+	public static final int MAX_ITERATIONS_DEFAULT = 15;
 
 	@Override
 	public int run(String[] args) throws Exception {
@@ -85,7 +85,7 @@ public class BoggleDriver extends Configured implements Tool {
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, BoggleRoll.BIG_BOGGLE_VERSION));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, 1000));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
@@ -150,13 +150,14 @@ public class BoggleDriver extends Configured implements Tool {
 				throw new RuntimeException("Job did not return sucessfully.  Check the logs for info.");
 			}
 
-			// Check to see if the entire graph has been traversed
 			long currentWordCount = job.getCounters().findCounter("boggle", "words").getValue();
 			bloomSavings += job.getCounters().findCounter("boggle", "bloom").getValue();
 
 			logger.info("Traversed graph for " + iteration + " iterations.  Found " + currentWordCount
 					+ " potential words.  Bloom saved " + bloomSavings + " so far.");
 
+			// Check to see if the entire graph has been traversed, the entire roll has been iterated,
+			// or the maximum number of iterations have happened.
 			if (currentWordCount == previousWordCount
 					|| iteration == (roll.rollSize * roll.rollSize) || iteration == maxiterations) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount
@@ -236,7 +237,12 @@ public class BoggleDriver extends Configured implements Tool {
 		Path parent = getPath(input, iteration);
 		fileSystem.mkdirs(parent);
 
+		SequenceFile.Writer writer = null;
+		
 		for (int i = 0; i < roll.rollCharacters.length; i++) {
+			writer = SequenceFile.createWriter(fileSystem, configuration, new Path(parent, i + ".txt"),
+					Text.class, RollGraphWritable.class);
+			
 			for (int j = 0; j < roll.rollCharacters[i].length; j++) {
 				ArrayList<Node> nodes = new ArrayList<Node>();
 				nodes.add(new Node(i, j));
@@ -245,21 +251,14 @@ public class BoggleDriver extends Configured implements Tool {
 
 				Text text = new Text(roll.rollCharacters[i][j]);
 
-				// Note:
-				// By creating a file per starting character, that can cause
-				// one character's file to get very little use if it's a z or x or y.
-				// You could work around this by rebalancing every so often.
-
 				// Mimic the adjacency matrix written by the mapper to start things off
-				SequenceFile.Writer writer = null;
-
-				writer = SequenceFile.createWriter(fileSystem, configuration, new Path(parent, i + "-" + j + ".txt"),
-						text.getClass(), graphWritable.getClass());
 				writer.append(text, graphWritable);
-
-				IOUtils.closeStream(writer);
 			}
+			
+			IOUtils.closeStream(writer);
 		}
+		
+		IOUtils.closeStream(writer);
 	}
 
 	/**
