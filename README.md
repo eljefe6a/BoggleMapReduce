@@ -3,7 +3,7 @@ BoggleMapReduce
 
 A program to use Hadoop MapReduce and Graph Theory to efficiently and scalably find all words in a Boggle roll.
 
-If you haven't ever played Boggle, refer to the (Wikipedia)[http://en.wikipedia.org/wiki/Boggle] page for how to play. To form a word in Boggle, you start with an arbitrary dice's letter and try to form a word with adjoining dices' letters.
+If you haven't ever played Boggle, refer to the (Wikipedia)[http://en.wikipedia.org/wiki/Boggle] page for how to play. To form a word in Boggle, you start with an arbitrary dice's letter and try to form a word with adjoining dices' letters.  Keeping on going through all dice until you have found every word in roll.
 
 How to Use it
 =============
