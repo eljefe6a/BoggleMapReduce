@@ -15,6 +15,11 @@ The bloom.out file is the location of the Bloom Filter serialized to a file.  Th
 
 You'll need to run the UserDictBloom to create a new bloom file if you want to use a different dictionary than linux.words.
 
+You can control other parameters using the -D command.  
+minimumwordsize - The Boggle game rules say the words have to be >=3 characters to count.  You can make this larger or smaller.  
+rollversion - The version of the Boggle dice to use.  0 is newest version (4x4 matrix) of the dice.  1 is the old version (4x4 matrix) of the dice.  2 is the Big Boggle Verion (5x5 matrix) of the dice.  Passing in a number >5 will create a random NxN matrix out of Big Boggle dice.
+maxiterations - The maximum number of iterations to go through before stopping.
+
 How it works
 ============
 
