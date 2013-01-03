@@ -32,7 +32,7 @@ Once the loop is done, the possible words are passed in to a final MapReduce job
 Benefits of the Bloom Filter
 ============================
 
-The (Bloom Filter)[http://en.wikipedia.org/wiki/Bloom_filter] allows the program to efficiently and quickly filter out words that don't appear in the dictionary.  Filtering out a word or node early allows you skip the dead ends much quicker.  Throwing out a word early in the iteration pays good dividends because of exponential growth of child nodes.
+The (Bloom Filter)[http://en.wikipedia.org/wiki/Bloom_filter] allows the program to efficiently and quickly filter out words that don't appear in the dictionary.  Filtering out a word or node early allows you skip the dead ends much quicker.  Throwing out a word early in the iteration pays good dividends because of factorial growth of child nodes.
 
 For example, take this line of log output from the program:  
 12/12/29 19:29:48 INFO Boggle: Traversed graph for 11 iterations.  Found 3404 potential words.  Bloom saved 11830 so far.  
