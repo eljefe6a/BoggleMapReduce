@@ -74,7 +74,7 @@ public class UserDictBloom {
 				}
 			}
 			
-			System.out.println("Total Words:" + totalWords + " Unique Word Partss:" + hashSet.size() + " Size:" + size);
+			System.out.println("Total Words:" + totalWords + " Unique Word Parts:" + hashSet.size() + " Total Word Parts Size:" + size);
 
 			dict.close();
 
