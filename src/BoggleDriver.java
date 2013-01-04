@@ -121,6 +121,8 @@ public class BoggleDriver extends Configured implements Tool {
 
 		long previousWordCount = 0;
 		long bloomSavings = 0;
+		
+		logger.info("Starting graph traversal.");
 
 		// Traverse the graph until it is completely traversed
 		do {
