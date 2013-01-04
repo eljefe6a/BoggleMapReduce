@@ -154,14 +154,14 @@ public class BoggleDriver extends Configured implements Tool {
 			bloomSavings += job.getCounters().findCounter("boggle", "bloom").getValue();
 
 			logger.info("Traversed graph for " + iteration + " iterations.  Found " + currentWordCount
-					+ " potential words.  Bloom saved " + bloomSavings + " so far.");
+					+ " potential words.  Bloom prevented " + bloomSavings + " traversals so far.");
 
 			// Check to see if the entire graph has been traversed, the entire roll has been iterated,
 			// or the maximum number of iterations have happened.
 			if (currentWordCount == previousWordCount
 					|| iteration == (roll.rollSize * roll.rollSize) || iteration == maxiterations) {
 				logger.info("Finished traversing graph after " + iteration + " iterations.  Found " + currentWordCount
-						+ " potential words.  Bloom saved " + bloomSavings + ".");
+						+ " potential words.  Bloom prevented " + bloomSavings + " traversals.");
 				break;
 			}
 
