@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +46,10 @@ public class UserDictBloom {
 			Pattern words = Pattern.compile("[a-z]*");
 
 			BloomFilter bloomFilter = new BloomFilter(VECTOR_SIZE, NBHASH, HASH_TYPE);
+			
+			HashSet<String> hashSet = new HashSet<String>();
+			long size = 0;
+			long totalWords = 0;
 
 			while ((line = dict.readLine()) != null) {
 				// Normalize all words to lower case and remove all dashes
@@ -56,11 +61,20 @@ public class UserDictBloom {
 					for (int i = 0; i < line.length(); i++) {
 						String wordPiece = line.substring(0, i + 1);
 						bloomFilter.add(new Key(wordPiece.getBytes()));
+						
+						if (!hashSet.contains(wordPiece)) {
+							hashSet.add(wordPiece);
+							size += wordPiece.length();
+						}
 					}
+					
+					totalWords++;
 				} else {
 					System.out.println("Skipping entry: \"" + line + "\"");
 				}
 			}
+			
+			System.out.println("Total Words:" + totalWords + " Unique Word Partss:" + hashSet.size() + " Size:" + size);
 
 			dict.close();
 
