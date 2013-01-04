@@ -2,8 +2,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.io.Writable;
 
@@ -69,43 +67,6 @@ public class RollGraphWritable implements Writable {
 
 			nodes.add(new Node(row, column));
 		}
-	}
-
-	/**
-	 * Serializes the object to a string representation
-	 * 
-	 * @return The string representation
-	 */
-	public String serialize() {
-		return toString();
-	}
-
-	/**
-	 * Deserializes the string to a RollGraphWritable
-	 * 
-	 * @param rollString
-	 *            The string represenation
-	 * @return The RollGraphWritable in the string
-	 */
-	public static RollGraphWritable deserialize(String rollString) {
-		String[] parts = rollString.split(" ");
-
-		// Use Regex to read out the rows and columns in the string
-		Pattern pattern = Pattern.compile("\\[(\\d*),(\\d*)\\]");
-		String nodesString = parts[0].substring(1, parts[0].length() - 1);
-		Matcher nodeMatcher = pattern.matcher(nodesString);
-
-		ArrayList<Node> nodes = new ArrayList<Node>();
-
-		// Go through all groups and add their rows and columns
-		while (nodeMatcher.find()) {
-			Node node = new Node(nodeMatcher.group(1), nodeMatcher.group(2));
-			nodes.add(node);
-		}
-
-		RollGraphWritable graphWritable = new RollGraphWritable(nodes, Boolean.parseBoolean(parts[1]));
-
-		return graphWritable;
 	}
 
 	@Override
