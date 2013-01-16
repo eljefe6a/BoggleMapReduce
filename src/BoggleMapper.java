@@ -29,8 +29,11 @@ public class BoggleMapper extends Mapper<Text, RollGraphWritable, Text, RollGrap
 		// Load the Bloom Filter
 		FileSystem fileSystem = FileSystem.get(configuration);
 
-		bloomFilter = new BloomFilter(UserDictBloom.VECTOR_SIZE, UserDictBloom.NBHASH, UserDictBloom.HASH_TYPE);
-		bloomFilter.readFields(fileSystem.open(new Path(configuration.get(BoggleDriver.BLOOM_PARAM))));
+		if (configuration.getBoolean(BoggleDriver.ENABLE_BLOOM_PARAM, BoggleDriver.ENABLE_BLOOM_DEFAULT)) {
+			// Only allow BloomFilter usage if it's turned on
+			bloomFilter = new BloomFilter(UserDictBloom.VECTOR_SIZE, UserDictBloom.NBHASH, UserDictBloom.HASH_TYPE);
+			bloomFilter.readFields(fileSystem.open(new Path(configuration.get(BoggleDriver.BLOOM_PARAM))));
+		}
 	}
 
 	@Override
@@ -66,6 +69,8 @@ public class BoggleMapper extends Mapper<Text, RollGraphWritable, Text, RollGrap
 		// Emit the characters around the last node in the Boggle Roll
 		Node node = rollGraph.nodes.get(rollGraph.nodes.size() - 1);
 
+		boolean proceed;
+		
 		for (int row = node.row - 1; row < node.row + 2; row++) {
 			if (row < 0 || row >= roll.rollSize) {
 				// Check if row is outside the bounds and skip if so
@@ -85,7 +90,11 @@ public class BoggleMapper extends Mapper<Text, RollGraphWritable, Text, RollGrap
 					// Node not found, see if it passes the membership test
 					String newWord = charsSoFar + roll.rollCharacters[row][col];
 
-					if (bloomFilter.membershipTest(new Key(newWord.getBytes()))) {
+					// If Bloom is null (user set Bloom to not be used, just emit)
+					// If Bloom is not null, do a membership test and emit
+					proceed = bloomFilter == null ? true : bloomFilter.membershipTest(new Key(newWord.getBytes()));
+					
+					if (proceed) {
 						// It might exist, create new object, add new node, and emit
 						@SuppressWarnings("unchecked")
 						ArrayList<Node> nextNodeList = (ArrayList<Node>) rollGraph.nodes.clone();

@@ -40,7 +40,10 @@ public class BoggleDriver extends Configured implements Tool {
 	public static final String ROLL_PARAM = "roll";
 
 	/** The parameter name for the roll version */
-	public static final String ROLL_VERSION = "rollversion";
+	public static final String ROLL_VERSION_PARAM = "rollversion";
+	
+	/** The parameter name for the roll version */
+	public static final int ROLL_VERSION_DEFAULT = BoggleRoll.NEW_VERSION;
 
 	/** The parameter name for the minimum word size to output */
 	public static final String MAX_ITERATIONS_PARAM = "maxiterations";
@@ -48,6 +51,12 @@ public class BoggleDriver extends Configured implements Tool {
 	/** The default value for the minimum word size to output */
 	public static final int MAX_ITERATIONS_DEFAULT = 15;
 
+	/** The parameter name to use a BloomFilter */
+	public static final String ENABLE_BLOOM_PARAM = "bloom";
+
+	/** The default value for using the BloomFilter */
+	public static final boolean ENABLE_BLOOM_DEFAULT = true;
+	
 	@Override
 	public int run(String[] args) throws Exception {
 		if (args.length != 4) {
@@ -84,8 +93,9 @@ public class BoggleDriver extends Configured implements Tool {
 
 		configuration.set(BLOOM_PARAM, bloomPath);
 		configuration.set(DICTIONARY_PARAM, dictionary);
+		configuration.setBooleanIfUnset(ENABLE_BLOOM_PARAM, ENABLE_BLOOM_DEFAULT);
 
-		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION, 1000));
+		BoggleRoll roll = BoggleRoll.createRoll(configuration.getInt(ROLL_VERSION_PARAM, ROLL_VERSION_DEFAULT));
 		configuration.set(ROLL_PARAM, roll.serialize());
 
 		int iteration = traverseGraph(input, configuration, fileSystem, roll);
