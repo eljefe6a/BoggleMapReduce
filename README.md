@@ -3,7 +3,7 @@ BoggleMapReduce
 
 A program to use Hadoop MapReduce and Graph Theory to efficiently and scalably find all words in a Boggle roll.  For a more detailed description read these two blog posts http://blog.cloudera.com/blog/2013/01/understanding-mapreduce-via-boggle/ and http://blog.cloudera.com/blog/2013/01/understanding-mapreduce-via-boggle-part-2-performance-optimization/.
 
-If you haven't ever played Boggle, refer to the (Wikipedia)[http://en.wikipedia.org/wiki/Boggle] page for how to play. To form a word in Boggle, you start with an arbitrary dice's letter and try to form a word with adjoining dices' letters.  Keeping on going through all dice until you have found every word in roll.
+If you haven't ever played Boggle, refer to the [Wikipedia](http://en.wikipedia.org/wiki/Boggle) page for how to play. To form a word in Boggle, you start with an arbitrary dice's letter and try to form a word with adjoining dices' letters.  Keeping on going through all dice until you have found every word in roll.
 
 How to Use it
 =============
@@ -32,7 +32,7 @@ Once the loop is done, the possible words are passed in to a final MapReduce job
 Benefits of the Bloom Filter
 ============================
 
-The (Bloom Filter)[http://en.wikipedia.org/wiki/Bloom_filter] allows the program to efficiently and quickly filter out words that don't appear in the dictionary.  Filtering out a word or node early allows you skip the dead ends much quicker.  Throwing out a word early in the iteration pays good dividends because of factorial growth of child nodes.
+The [Bloom Filter](http://en.wikipedia.org/wiki/Bloom_filter) allows the program to efficiently and quickly filter out words that don't appear in the dictionary.  Filtering out a word or node early allows you skip the dead ends much quicker.  Throwing out a word early in the iteration pays good dividends because of factorial growth of child nodes.
 
 For example, take this line of log output from the program:  
 12/12/29 19:29:48 INFO Boggle: Traversed graph for 11 iterations.  Found 3404 potential words.  Bloom saved 11830 so far.  
